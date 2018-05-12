@@ -13,4 +13,3 @@ function autodrop_install() {
   // Clear library discovery cache for all themes.
   \Drupal::cache('discovery')->deleteMultiple($cids);
 }
-
