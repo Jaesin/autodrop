@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\autodrop\Kernel;
 
-use Drupal\Tests\token\Kernel\KernelTestBase;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
  * @group autodrop
