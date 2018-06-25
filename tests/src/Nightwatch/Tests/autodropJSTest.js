@@ -2,7 +2,7 @@ module.exports = {
   'Autodrop test drop button Javascript' : function (browser) {
     // Get the test page and check the title.
     browser
-      .relativeURL('/autodrop-test-page')
+      .drupalRelativeURL('/autodrop-test-page')
       .waitForElementVisible('body', 1000)
       .assert.title('Autodrop test page | Drupal');
     // Make sure the first action is visible but not the second.
@@ -21,15 +21,15 @@ module.exports = {
       browser.expect.element('#autodrop-test-dropbutton').text.to.contain('Action no 1');
       browser.expect.element('#autodrop-test-dropbutton').text.to.not.contain('Action no 2');
     });
-    browser.logAndEnd({ onlyOnError: false });
+    browser.drupalLogAndEnd({ onlyOnError: false });
   },
   '@tags': ['autodrop'],
   before(browser) {
     browser
-      .installDrupal({ setupFile: __dirname + '/NightwatchSetup.php' });
+      .drupalInstall({ setupFile: __dirname + '/NightwatchSetup.php' });
   },
   after(browser) {
     browser
-      .uninstallDrupal();
+      .drupalUninstall();
   }
 };
