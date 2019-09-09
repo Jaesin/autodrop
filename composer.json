@@ -1,0 +1,19 @@
+{
+    "name": "drupal/autodrop",
+    "description": "Expands drop buttons on hover.",
+    "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
+    "homepage": "http://drupal.org/project/autodrop",
+    "readme": "README.md",
+    "authors": [
+        {
+            "name": "Jaesin Mulenex",
+            "homepage": "https://www.drupal.org/u/Jaesin",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "http://drupal.org/project/issues/autodrop",
+        "source": "https://github.com/Jaesin/autodrop"
+    }
+}
