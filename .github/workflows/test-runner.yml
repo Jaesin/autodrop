@@ -51,6 +51,7 @@ jobs:
           # Setup nightwatch.
           yarn --cwd $DRUPAL_ROOT/core install
           sudo npm install selenium-standalone@latest -g
+          selenium-standalone start
           # Add our test url to the environment file.
           sed -e "s/^DRUPAL_TEST_BASE_URL=$/DRUPAL_TEST_BASE_URL=$(echo $SIMPLETEST_BASE_URL | sed -e 's/\//\\\//g')/" < $DRUPAL_ROOT/core/.env.example > $DRUPAL_ROOT/core/.env
           cat $DRUPAL_ROOT/core/.env
@@ -66,5 +67,4 @@ jobs:
           ## Run kernel/unit tests.
           $RUNNER_WORKSPACE/drupal/vendor/bin/phpunit -c $RUNNER_WORKSPACE/drupal/web/core/phpunit.xml.dist --verbose $RUNNER_WORKSPACE/drupal/web/modules/$DRUPAL_MODULE
           ## Run nightwatch tests.
-          which selenium-standalone
           yarn --cwd $RUNNER_WORKSPACE/drupal/web/core test:nightwatch -g ../modules/sandbox/autodrop/tests/src/Nightwatch/Tests
