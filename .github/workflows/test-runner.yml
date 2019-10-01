@@ -50,7 +50,7 @@ jobs:
 
           # Setup nightwatch.
           yarn --cwd $DRUPAL_ROOT/core install
-          sudo npm install selenium-standalone@latest -g
+          sudo npm install chromedriver@latest selenium-standalone@latest -g
           selenium-standalone start
           # Add our test url to the environment file.
           sed -e "s/^DRUPAL_TEST_BASE_URL=$/DRUPAL_TEST_BASE_URL=$(echo $SIMPLETEST_BASE_URL | sed -e 's/\//\\\//g')/" < $DRUPAL_ROOT/core/.env.example > $DRUPAL_ROOT/core/.env
