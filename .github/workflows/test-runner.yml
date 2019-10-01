@@ -1,0 +1,70 @@
+name: Test runner
+
+on: [pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Remove Xdebug
+        run: |
+          xdebug_ini=$(php -i | grep -i "xdebug.ini" | sed -e 's/,$//')
+          sudo sed -Ei 's/^(zend_extension=.*)/; \1/' $xdebug_ini
+
+      - name: Install Drush 8
+        run: |
+          composer global require drush/drush:~8.3
+          sudo ln -s $HOME/.composer/vendor/bin/drush /usr/local/bin/drush
+
+      - name: Create a drupal database
+        run: mysql -uroot -proot -e "CREATE DATABASE drupal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+      - name: Setup test environment
+        env:
+          # The name of the module to run tests on (this module).
+          DRUPAL_MODULE: autodrop
+          # Database variable for kernel tests.
+          SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal
+          # Web server URL for browser tests.
+          SIMPLETEST_BASE_URL: http://localhost:8888
+        run: |
+          # Set the drupal root folder location.
+          export DRUPAL_ROOT=$RUNNER_WORKSPACE/drupal/web
+
+          # Download Drupal 8 core.
+          composer create-project drupal-composer/drupal-project:8.x-dev $RUNNER_WORKSPACE/drupal/ --no-interaction
+
+          # Reference the module in build site.
+          ln -s $GITHUB_WORKSPACE $DRUPAL_ROOT/modules/$DRUPAL_MODULE
+
+          # We need to run simpletest so install drupal and enable simpletest.
+          drush -y --root=$DRUPAL_ROOT site-install --db-url=$SIMPLETEST_DB
+          drush -y --root=$DRUPAL_ROOT en simpletest $DRUPAL_MODULE
+
+          # Start a web server on port 8888, run in the background and wait.
+          php $DRUPAL_ROOT/core/scripts/drupal server -s -n --port=8888 > /dev/null 2>&1 &
+
+          # Setup nightwatch.
+          yarn --cwd $DRUPAL_ROOT/core install
+          yarn --cwd $DRUPAL_ROOT/core add selenium-standalone@latest
+          $DRUPAL_ROOT/core/node_modules/.bin/selenium-standalone start
+          # Add our test url to the environment file.
+          sed -e "s/^DRUPAL_TEST_BASE_URL=$/DRUPAL_TEST_BASE_URL=$(echo $SIMPLETEST_BASE_URL | sed -e 's/\//\\\//g')/" < $DRUPAL_ROOT/core/.env.example > $DRUPAL_ROOT/core/.env
+          cat $DRUPAL_ROOT/core/.env
+
+      - name: Run tests
+        env:
+          # Note: These are the same variables used in `Install Drupal`. Global variables will be available in the next
+          # release of github actions.
+          DRUPAL_MODULE: autodrop
+          SIMPLETEST_DB: mysql://root:root@127.0.0.1/drupal
+          SIMPLETEST_BASE_URL: http://localhost:8888
+        run: |
+          ## Run kernel/unit tests.
+          $RUNNER_WORKSPACE/drupal/vendor/bin/phpunit -c $RUNNER_WORKSPACE/drupal/web/core/phpunit.xml.dist --verbose $RUNNER_WORKSPACE/drupal/web/modules/$DRUPAL_MODULE
+          ## Run nightwatch tests.
+          yarn --cwd $RUNNER_WORKSPACE/drupal/web/core test:nightwatch -g ../modules/sandbox/autodrop/tests/src/Nightwatch/Tests
